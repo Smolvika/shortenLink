@@ -2,7 +2,6 @@ package inMemory
 
 import (
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -22,7 +21,7 @@ func (r Repository) GetShortUrl(url string) (string, error) {
 	if original, ok := r.shortToOriginalAndDate[url]; ok {
 		return original.url, nil
 	}
-	return "", fmt.Errorf("URL with this token not exist")
+	return "", nil
 }
 
 func (r Repository) Delete(date string) error {

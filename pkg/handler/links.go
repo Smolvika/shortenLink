@@ -23,10 +23,11 @@ func (h *Handler) CreateShortUrl(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	//if err := valid.ValidateDate(input.Date); err != nil {
-	//	newErrorResponse(c, http.StatusBadRequest, err.Error())
-	//	return
-	//}
+
+	if err := valid.ValidateDate(input.Date); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
 	shortURL, err := h.services.CreateShortUrl(input.OriginalUrl, input.ShortUrl, input.Date)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -36,10 +37,6 @@ func (h *Handler) CreateShortUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"shortURL": shortURL,
 	})
-}
-
-type shortLinkInput struct {
-	Url string `json:"short_url" binding:"required"`
 }
 
 func (h *Handler) GetOriginalUrl(c *gin.Context) {
@@ -57,9 +54,10 @@ func (h *Handler) GetOriginalUrl(c *gin.Context) {
 	}
 
 	if originalURL == "" {
-		newErrorResponse(c, http.StatusInternalServerError, "not such token")
+		newErrorResponse(c, http.StatusNotFound, "not such ShortURL")
 		return
 	}
+
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"originalURL": originalURL,
 	})
