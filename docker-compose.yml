@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app_im:
+    build: ./
+    command: ./shortenLink
+    ports:
+      - "8080:8080"
+  app_db:
+    build: ./
+    command: ./wait-for-postgres.sh db ./shortenLink -db
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=ghjghj
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=ghjghj
+    ports:
+      - "5432:5432"
+
