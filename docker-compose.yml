@@ -3,12 +3,12 @@ version: '3.8'
 services:
   app_im:
     build: ./
-    command: ./shortenLink -im
+    command: ./shortenLink -storage=im
     ports:
       - "8080:8080"
   app_db:
     build: ./
-    command: ./wait-for-postgres.sh db ./shortenLink -db
+    command: ./wait-for-postgres.sh db ./shortenLink -storage=db
     ports:
       - "8080:8080"
     depends_on:

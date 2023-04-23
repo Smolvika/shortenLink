@@ -20,9 +20,8 @@ import (
 )
 
 func main() {
-	var imFlag, dbFlag bool
-	flag.BoolVar(&dbFlag, "db", false, "Run with the postgres")
-	flag.BoolVar(&imFlag, "im", false, "Run with the in-memory")
+	var Storage string
+	flag.StringVar(&Storage, "storage", "", "Run with the storage")
 	flag.Parse()
 
 	if err := initConfig(); err != nil {
@@ -33,10 +32,8 @@ func main() {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
-	if dbFlag {
-		startApp("db")
-	} else if imFlag {
-		startApp("im")
+	if Storage == "db" || Storage == "im" {
+		startApp(Storage)
 	} else {
 		log.Fatal("This flag does not exist")
 	}

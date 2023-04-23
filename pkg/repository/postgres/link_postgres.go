@@ -19,22 +19,20 @@ func (p *Postgres) CreateShortUrl(originalUrl, shortUrl, date string) (string, e
 	if err != nil {
 		return "", err
 	}
+	defer tx.Rollback()
 	var url string
 	row, err := p.db.Query("SELECT original_url FROM links  WHERE short_url=$1", shortUrl)
 	if err != nil {
 		return "", err
 	}
 	if err := row.Scan(&url); err != nil {
-		tx.Rollback()
 		return "", err
 	}
 	if url != "" {
-		tx.Rollback()
 		return "", nil
 	}
 	_, err = p.db.Exec("INSERT INTO links (original_url, short_url, expiration_date) VALUES ($1,$2,$3)", originalUrl, shortUrl, date)
 	if err != nil {
-		tx.Rollback()
 		return "", err
 	}
 	return shortUrl, tx.Commit()
@@ -52,6 +50,6 @@ func (p *Postgres) GetShortUrl(url string) (string, error) {
 	return origUrl, nil
 }
 func (p *Postgres) Delete(date string) error {
-	_, err := p.db.Exec("DELETE FROM links WHERE expiration_date = $1", date)
+	_, err := p.db.Exec("DELETE FROM links WHERE expiration_date<=$1", date)
 	return err
 }
