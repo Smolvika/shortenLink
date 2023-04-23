@@ -3,12 +3,11 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"shortenLink/pkg/valid"
+	"shortenLink/pkg/validite"
 )
 
 type LinkInput struct {
 	OriginalUrl string `json:"original_url" binding:"required"`
-	ShortUrl    string
 	Date        string `json:"date" binding:"required"`
 }
 
@@ -19,16 +18,16 @@ func (h *Handler) CreateShortUrl(c *gin.Context) {
 		return
 	}
 
-	if err := valid.ValidateOriginalURL(input.OriginalUrl); err != nil {
+	if err := validite.OriginalURL(input.OriginalUrl); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := valid.ValidateDate(input.Date); err != nil {
+	if err := validite.Date(input.Date); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	shortURL, err := h.services.CreateShortUrl(input.OriginalUrl, input.ShortUrl, input.Date)
+	shortURL, err := h.services.CreateShortUrl(input.OriginalUrl, input.Date)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -42,7 +41,7 @@ func (h *Handler) CreateShortUrl(c *gin.Context) {
 func (h *Handler) GetOriginalUrl(c *gin.Context) {
 	url := c.Param("short")
 
-	if err := valid.ValidateShortURL(url); err != nil {
+	if err := validite.ShortURL(url); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}

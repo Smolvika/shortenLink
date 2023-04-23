@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/go-co-op/gocron"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -13,7 +12,7 @@ import (
 	"os/signal"
 	"shortenLink"
 	"shortenLink/pkg/handler"
-	"shortenLink/pkg/repository/inMemory"
+	"shortenLink/pkg/repository"
 	"shortenLink/pkg/repository/postgres"
 	"shortenLink/pkg/service"
 	"syscall"
@@ -21,8 +20,9 @@ import (
 )
 
 func main() {
-	var PostgresFlag bool
-	flag.BoolVar(&PostgresFlag, "db", false, "Run with the postgres database")
+	var imFlag, dbFlag bool
+	flag.BoolVar(&dbFlag, "db", false, "Run with the postgres")
+	flag.BoolVar(&imFlag, "im", false, "Run with the in-memory")
 	flag.Parse()
 
 	if err := initConfig(); err != nil {
@@ -32,13 +32,20 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
-	startApp(PostgresFlag)
+
+	if dbFlag {
+		startApp("db")
+	} else if imFlag {
+		startApp("im")
+	} else {
+		log.Fatal("This flag does not exist")
+	}
 
 }
 
-func startApp(postgresFlag bool) {
-	var repos service.Repository
-	if postgresFlag {
+func startApp(flag string) {
+	var repos *repository.Repository
+	if flag == "db" {
 		db, err := postgres.NewPostgresDB(postgres.Config{
 			Host:     viper.GetString("db.host"),
 			Port:     viper.GetString("db.port"),
@@ -55,13 +62,12 @@ func startApp(postgresFlag bool) {
 				log.Printf("Failed to close database:%v\n", err)
 			}
 		}()
-		repos = postgres.New(db)
+		repos = repository.NewDB(db)
 		if err != nil {
 			log.Fatalf("failed to initialize db: %s", err.Error())
 		}
 	} else {
-		const mapLen = 100
-		repos = inMemory.New(mapLen)
+		repos = repository.NewIm()
 	}
 
 	services := service.New(repos)
@@ -76,21 +82,21 @@ func startApp(postgresFlag bool) {
 
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(1).Day().Do(func() {
-		year, month, day := time.Now().Date()
-		err := services.Delete(fmt.Sprintf("%d-%02d-%d", year, month, day))
+		date := time.Now().Format("2006-01-02")
+		err := services.Delete(date)
 		if err != nil {
-			log.Println("error delete")
+			log.Println(err)
 		}
 	})
 	s.StartAsync()
 
-	log.Print(" Started")
+	log.Print("Started")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	log.Print(" Shutting Down")
+	log.Print("Shutting Down")
 
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("error occured on server shutting down: %s", err.Error())

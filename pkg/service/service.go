@@ -1,15 +1,17 @@
 package service
 
+import "shortenLink/pkg/repository"
+
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
-type Repository interface {
-	CreateShortUrl(originalUrl, shortUrl, date string) (string, error)
+type Link interface {
+	CreateShortUrl(originalUrl, date string) (string, error)
 	GetShortUrl(url string) (string, error)
 	Delete(date string) error
 }
 type Service struct {
-	repos Repository
+	Link
 }
 
-func New(repos Repository) *Service {
-	return &Service{repos: repos}
+func New(repos *repository.Repository) *Service {
+	return &Service{Link: NewLinkService(repos)}
 }

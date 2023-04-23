@@ -10,46 +10,46 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockRepository is a mock of Repository interface.
-type MockRepository struct {
+// MockLink is a mock of Link interface.
+type MockLink struct {
 	ctrl     *gomock.Controller
-	recorder *MockRepositoryMockRecorder
+	recorder *MockLinkMockRecorder
 }
 
-// MockRepositoryMockRecorder is the mock recorder for MockRepository.
-type MockRepositoryMockRecorder struct {
-	mock *MockRepository
+// MockLinkMockRecorder is the mock recorder for MockLink.
+type MockLinkMockRecorder struct {
+	mock *MockLink
 }
 
-// NewMockRepository creates a new mock instance.
-func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
-	mock := &MockRepository{ctrl: ctrl}
-	mock.recorder = &MockRepositoryMockRecorder{mock}
+// NewMockLink creates a new mock instance.
+func NewMockLink(ctrl *gomock.Controller) *MockLink {
+	mock := &MockLink{ctrl: ctrl}
+	mock.recorder = &MockLinkMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
+func (m *MockLink) EXPECT() *MockLinkMockRecorder {
 	return m.recorder
 }
 
 // CreateShortUrl mocks base method.
-func (m *MockRepository) CreateShortUrl(originalUrl, shortUrl, date string) (string, error) {
+func (m *MockLink) CreateShortUrl(originalUrl, date string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateShortUrl", originalUrl, shortUrl, date)
+	ret := m.ctrl.Call(m, "CreateShortUrl", originalUrl, date)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateShortUrl indicates an expected call of CreateShortUrl.
-func (mr *MockRepositoryMockRecorder) CreateShortUrl(originalUrl, shortUrl, date interface{}) *gomock.Call {
+func (mr *MockLinkMockRecorder) CreateShortUrl(originalUrl, date interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateShortUrl", reflect.TypeOf((*MockRepository)(nil).CreateShortUrl), originalUrl, shortUrl, date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateShortUrl", reflect.TypeOf((*MockLink)(nil).CreateShortUrl), originalUrl, date)
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(date string) error {
+func (m *MockLink) Delete(date string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", date)
 	ret0, _ := ret[0].(error)
@@ -57,13 +57,13 @@ func (m *MockRepository) Delete(date string) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRepositoryMockRecorder) Delete(date interface{}) *gomock.Call {
+func (mr *MockLinkMockRecorder) Delete(date interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockLink)(nil).Delete), date)
 }
 
 // GetShortUrl mocks base method.
-func (m *MockRepository) GetShortUrl(url string) (string, error) {
+func (m *MockLink) GetShortUrl(url string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetShortUrl", url)
 	ret0, _ := ret[0].(string)
@@ -72,7 +72,7 @@ func (m *MockRepository) GetShortUrl(url string) (string, error) {
 }
 
 // GetShortUrl indicates an expected call of GetShortUrl.
-func (mr *MockRepositoryMockRecorder) GetShortUrl(url interface{}) *gomock.Call {
+func (mr *MockLinkMockRecorder) GetShortUrl(url interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortUrl", reflect.TypeOf((*MockRepository)(nil).GetShortUrl), url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortUrl", reflect.TypeOf((*MockLink)(nil).GetShortUrl), url)
 }

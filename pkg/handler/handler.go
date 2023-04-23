@@ -16,11 +16,10 @@ func New(services *service.Service) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	links := router.Group("/tokens")
+	links := router.Group("/url")
 	{
 		links.POST("/short", h.CreateShortUrl)
 		links.GET("/:short", h.GetOriginalUrl)
-
 	}
 
 	return router

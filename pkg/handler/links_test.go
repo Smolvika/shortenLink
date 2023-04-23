@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"shortenLink"
 	"shortenLink/pkg/service"
 	mockservice "shortenLink/pkg/service/mocks"
 	"testing"
@@ -16,12 +15,12 @@ import (
 
 func TestHandler_CreateShortUrl(t *testing.T) {
 
-	type mockBehavior func(r *mockservice.MockRepository, input shortenLink.Link)
+	type mockBehavior func(r *mockservice.MockLink, input LinkInput)
 
 	testTable := []struct {
 		name                 string
 		inputBody            string
-		input                shortenLink.Link
+		input                LinkInput
 		mockBehavior         mockBehavior
 		expectedStatusCode   int
 		expectedResponseBody string
@@ -29,12 +28,12 @@ func TestHandler_CreateShortUrl(t *testing.T) {
 		{
 			name:      "Ok",
 			inputBody: `{"original_url": "https://habr.com/ru/articles/555920/","date": "2020-03-03"}`,
-			input: shortenLink.Link{
+			input: LinkInput{
 				OriginalUrl: "https://habr.com/ru/articles/555920/",
 				Date:        "2020-03-03",
 			},
-			mockBehavior: func(r *mockservice.MockRepository, input shortenLink.Link) {
-				r.EXPECT().CreateShortUrl(input.OriginalUrl, gomock.Any(), input.Date).Return("9_gfyrnTY5", nil)
+			mockBehavior: func(r *mockservice.MockLink, input LinkInput) {
+				r.EXPECT().CreateShortUrl(input.OriginalUrl, input.Date).Return("9_gfyrnTY5", nil)
 			},
 			expectedStatusCode:   200,
 			expectedResponseBody: `{"shortURL":"9_gfyrnTY5"}`,
@@ -42,44 +41,44 @@ func TestHandler_CreateShortUrl(t *testing.T) {
 		{
 			name:      "Some data is missing",
 			inputBody: `{"date": "2020-03-03"}`,
-			input: shortenLink.Link{
+			input: LinkInput{
 				Date: "2020-03-03",
 			},
-			mockBehavior:         func(r *mockservice.MockRepository, input shortenLink.Link) {},
+			mockBehavior:         func(r *mockservice.MockLink, input LinkInput) {},
 			expectedStatusCode:   400,
 			expectedResponseBody: `{"message":"Key: 'LinkInput.OriginalUrl' Error:Field validation for 'OriginalUrl' failed on the 'required' tag"}`,
 		},
 		{
 			name:      "Invalid Original URL",
 			inputBody: `{"original_url": "555920", "date": "2020-03-03"}`,
-			input: shortenLink.Link{
+			input: LinkInput{
 				OriginalUrl: "555920",
 				Date:        "2020-03-03",
 			},
-			mockBehavior:         func(r *mockservice.MockRepository, input shortenLink.Link) {},
+			mockBehavior:         func(r *mockservice.MockLink, input LinkInput) {},
 			expectedStatusCode:   400,
 			expectedResponseBody: `{"message":"555920 is a invalid original URL"}`,
 		},
 		{
 			name:      "Invalid Date",
 			inputBody: `{"original_url":"https://habr.com/ru/articles/555920/", "date": "2020-33-33"}`,
-			input: shortenLink.Link{
+			input: LinkInput{
 				OriginalUrl: "https://habr.com/ru/articles/555920/",
 				Date:        "2020-33-33",
 			},
-			mockBehavior:         func(r *mockservice.MockRepository, input shortenLink.Link) {},
+			mockBehavior:         func(r *mockservice.MockLink, input LinkInput) {},
 			expectedStatusCode:   400,
 			expectedResponseBody: `{"message":"2020-33-33 is a invalid date"}`,
 		},
 		{
 			name:      "Problems on the service",
 			inputBody: `{"original_url":"https://habr.com/ru/articles/555920/", "date": "2020-04-03"}`,
-			input: shortenLink.Link{
+			input: LinkInput{
 				OriginalUrl: "https://habr.com/ru/articles/555920/",
 				Date:        "2020-04-03",
 			},
-			mockBehavior: func(r *mockservice.MockRepository, input shortenLink.Link) {
-				r.EXPECT().CreateShortUrl(input.OriginalUrl, gomock.Any(), input.Date).Return("", errors.New("problems on the service"))
+			mockBehavior: func(r *mockservice.MockLink, input LinkInput) {
+				r.EXPECT().CreateShortUrl(input.OriginalUrl, input.Date).Return("", errors.New("problems on the service"))
 			},
 			expectedStatusCode:   500,
 			expectedResponseBody: `{"message":"problems on the service"}`,
@@ -92,17 +91,17 @@ func TestHandler_CreateShortUrl(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			repo := mockservice.NewMockRepository(c)
+			repo := mockservice.NewMockLink(c)
 			testCase.mockBehavior(repo, testCase.input)
 
-			services := service.New(repo)
+			services := &service.Service{Link: repo}
 			handler := New(services)
 
 			r := gin.New()
-			r.POST("/tokens/short", handler.CreateShortUrl)
+			r.POST("/url/short", handler.CreateShortUrl)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPost, "/tokens/short", bytes.NewBufferString(testCase.inputBody))
+			req := httptest.NewRequest(http.MethodPost, "/url/short", bytes.NewBufferString(testCase.inputBody))
 
 			r.ServeHTTP(w, req)
 
@@ -112,7 +111,7 @@ func TestHandler_CreateShortUrl(t *testing.T) {
 	}
 }
 func TestHandler_GetOriginalUrl(t *testing.T) {
-	type mockBehavior func(r *mockservice.MockRepository, url string)
+	type mockBehavior func(r *mockservice.MockLink, url string)
 
 	testTable := []struct {
 		name                 string
@@ -125,7 +124,7 @@ func TestHandler_GetOriginalUrl(t *testing.T) {
 		{
 			name: "Ok",
 			url:  "9_gfyrnTY5",
-			mockBehavior: func(r *mockservice.MockRepository, url string) {
+			mockBehavior: func(r *mockservice.MockLink, url string) {
 				r.EXPECT().GetShortUrl(url).Return("https://habr.com/ru/articles/555920/", nil)
 			},
 			expectedStatusCode:   200,
@@ -134,14 +133,14 @@ func TestHandler_GetOriginalUrl(t *testing.T) {
 		{
 			name:                 "Invalid URL",
 			url:                  "9JDNVJ",
-			mockBehavior:         func(r *mockservice.MockRepository, url string) {},
+			mockBehavior:         func(r *mockservice.MockLink, url string) {},
 			expectedStatusCode:   400,
 			expectedResponseBody: `{"message":"9JDNVJ is a invalid URL"}`,
 		},
 		{
 			name: "Problems on the service",
 			url:  "9_gfyrnTY5",
-			mockBehavior: func(r *mockservice.MockRepository, url string) {
+			mockBehavior: func(r *mockservice.MockLink, url string) {
 				r.EXPECT().GetShortUrl(url).Return("", errors.New("problems on the service"))
 			},
 			expectedStatusCode:   500,
@@ -150,7 +149,7 @@ func TestHandler_GetOriginalUrl(t *testing.T) {
 		{
 			name: "Not such ShortURL",
 			url:  "9_gfyrnTY5",
-			mockBehavior: func(r *mockservice.MockRepository, url string) {
+			mockBehavior: func(r *mockservice.MockLink, url string) {
 				r.EXPECT().GetShortUrl(url).Return("", nil)
 			},
 			expectedStatusCode:   404,
@@ -164,17 +163,17 @@ func TestHandler_GetOriginalUrl(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			repo := mockservice.NewMockRepository(c)
+			repo := mockservice.NewMockLink(c)
 			testCase.mockBehavior(repo, testCase.url)
 
-			services := service.New(repo)
+			services := &service.Service{Link: repo}
 			handler := New(services)
 
 			r := gin.New()
-			r.GET("/tokens/:short", handler.GetOriginalUrl)
+			r.GET("/url/:short", handler.GetOriginalUrl)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodGet, "/tokens/"+testCase.url, nil)
+			req := httptest.NewRequest(http.MethodGet, "/url/"+testCase.url, nil)
 
 			r.ServeHTTP(w, req)
 

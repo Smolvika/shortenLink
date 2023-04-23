@@ -2,36 +2,41 @@ package service
 
 import (
 	"errors"
+	"log"
 	"math/rand"
+	"shortenLink/pkg/repository"
 	"time"
 )
 
 const set = "_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-func (s Service) CreateShortUrl(originalUrl, shortUrl, date string) (string, error) {
-	for {
-		shortUrl = GenerateShortUrl()
-		url, err := s.repos.CreateShortUrl(originalUrl, shortUrl, date)
+type LinkService struct {
+	repo repository.Link
+}
+
+func NewLinkService(repo repository.Link) *LinkService {
+	return &LinkService{repo: repo}
+}
+func (s *LinkService) CreateShortUrl(originalUrl, date string) (string, error) {
+	for i := 0; i < 10; i++ {
+		shortUrl := GenerateShortUrl()
+		url, err := s.repo.CreateShortUrl(originalUrl, shortUrl, date)
 		if err != nil {
-			if err != errors.New("there is already such a key") {
-				return "", err
-			}
-		} else {
+			return "", err
+		} else if url != "" {
 			return url, nil
 		}
 	}
+	log.Println("exceeded the number of attempts")
+	return "", errors.New("there is already such a key")
 }
 
-func (s Service) GetShortUrl(url string) (string, error) {
-	originalURL, err := s.repos.GetShortUrl(url)
-	if err != nil {
-		return "", err
-	}
-	return originalURL, nil
+func (s *LinkService) GetShortUrl(url string) (string, error) {
+	return s.repo.GetShortUrl(url)
 }
 
-func (s Service) Delete(date string) error {
-	return s.repos.Delete(date)
+func (s *LinkService) Delete(date string) error {
+	return s.repo.Delete(date)
 }
 
 func GenerateShortUrl() string {

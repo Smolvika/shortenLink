@@ -1,4 +1,4 @@
-package valid
+package validite
 
 import (
 	"errors"
@@ -26,7 +26,7 @@ func Test_ValidateOriginalURL(t *testing.T) {
 
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
-			err := ValidateOriginalURL(testCase.arr)
+			err := OriginalURL(testCase.arr)
 			assert.Equal(t, testCase.expected, err)
 
 		})
@@ -58,7 +58,7 @@ func Test_ValidateShortURL(t *testing.T) {
 
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
-			err := ValidateShortURL(testCase.arr)
+			err := ShortURL(testCase.arr)
 			assert.Equal(t, testCase.expected, err)
 
 		})
@@ -84,7 +84,7 @@ func Test_ValidateDate(t *testing.T) {
 
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
-			err := ValidateDate(testCase.arr)
+			err := Date(testCase.arr)
 			assert.Equal(t, testCase.expected, err)
 
 		})

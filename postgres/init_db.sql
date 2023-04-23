@@ -1,4 +1,4 @@
-CREATE TABLE links
+CREATE TABLE IF NOT EXISTS links
 (
     short_url   VARCHAR(10)   PRIMARY KEY,
     original_url VARCHAR(1024) NOT NULL,

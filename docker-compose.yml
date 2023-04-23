@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app_im:
     build: ./
-    command: ./shortenLink
+    command: ./shortenLink -im
     ports:
       - "8080:8080"
   app_db:
@@ -20,11 +20,13 @@ services:
     restart: always
     image: postgres:latest
     volumes:
-      - ./.database/postgres/data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=ghjghj
     ports:
       - "5432:5432"
-
+volumes:
+  db-data:
 
