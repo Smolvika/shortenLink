@@ -2,14 +2,12 @@ package inMemory
 
 import (
 	"errors"
-	"log"
 )
 
 func (r Repository) CreateShortUrl(originalUrl, shortUrl, date string) (string, error) {
 	if _, ok := r.shortToOriginalAndDate[shortUrl]; ok {
 		return "", errors.New("there is already such a key")
 	}
-	log.Println("in_")
 	r.shortToOriginalAndDate[shortUrl] = UrlAndDate{
 		url:  originalUrl,
 		date: date,

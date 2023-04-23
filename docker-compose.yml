@@ -26,16 +26,5 @@ services:
       - POSTGRES_PASSWORD=ghjghj
     ports:
       - "5432:5432"
-  migration:
-    image: migrate/migrate
-    networks:
-      - new
-    volumes:
-      - .:/migrations
-    command: ["user=postgres password= ghjghj dbname=postgres sslmode=disable", "up"]
-    links:
-      - db
-    depends_on:
-      - db
-networks:
-  new:
+
+

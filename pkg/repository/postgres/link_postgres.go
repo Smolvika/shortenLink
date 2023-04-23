@@ -2,12 +2,10 @@ package postgres
 
 import (
 	"errors"
-	"log"
 	"shortenLink"
 )
 
 func (r Repository) CreateShortUrl(originalUrl, shortUrl, date string) (string, error) {
-	log.Println("ps")
 	_, err := r.db.Exec("INSERT INTO links (original_url, short_url, expiration_date) VALUES ($1,$2,$3)", originalUrl, shortUrl, date)
 	if err != nil {
 		if err == errors.New("duplicate key violates unique constraint") {

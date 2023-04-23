@@ -58,7 +58,7 @@ func TestHandler_CreateShortUrl(t *testing.T) {
 			},
 			mockBehavior:         func(r *mockservice.MockRepository, input shortenLink.Link) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"message":"555920 is a invalid original url"}`,
+			expectedResponseBody: `{"message":"555920 is a invalid original URL"}`,
 		},
 		{
 			name:      "Invalid Date",
@@ -148,10 +148,10 @@ func TestHandler_GetOriginalUrl(t *testing.T) {
 			expectedResponseBody: `{"message":"problems on the service"}`,
 		},
 		{
-			name: "Invalid URL",
+			name: "Not such ShortURL",
 			url:  "9_gfyrnTY5",
 			mockBehavior: func(r *mockservice.MockRepository, url string) {
-				r.EXPECT().GetShortUrl(url).Return("", errors.New("not such ShortURL"))
+				r.EXPECT().GetShortUrl(url).Return("", nil)
 			},
 			expectedStatusCode:   404,
 			expectedResponseBody: `{"message":"not such ShortURL"}`,

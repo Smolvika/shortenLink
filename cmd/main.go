@@ -81,11 +81,10 @@ func startApp(postgresFlag bool) {
 		if err != nil {
 			log.Println("error delete")
 		}
-
 	})
 	s.StartAsync()
 
-	log.Print("notebookApp Started")
+	log.Print(" Started")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
